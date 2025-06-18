@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let listChartInstance = null;
 
     async function fetchRawData() {
-        console.log(`Buscando dados brutos do Trello... (Última atualização de dados brutos: ${new Date().toLocaleTimeString()})`);
+        // console.log(`Buscando dados brutos do Trello... (Última atualização de dados brutos: ${new Date().toLocaleTimeString()})`);
         try {
             const cardsResponse = await fetch(`https://api.trello.com/1/boards/${boardId}/cards?key=${apiKey}&token=${token}&members=true`);
             if (!cardsResponse.ok) {
@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 allTrelloLists.set(list.id, list.name);
             });
 
+
             const membersResponse = await fetch(`https://api.trello.com/1/boards/${boardId}/members?key=${apiKey}&token=${token}`);
             if (!membersResponse.ok) {
                 throw new Error(`Erro ao buscar membros: ${membersResponse.statusText}`);
@@ -64,10 +65,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 listChartInstance = null;
             }
         }
+
+        window.filterByDate = (start, end) => {
+            if (!allTrelloCards || allTrelloCards.length === 0) {
+                // console.log("❌ Dados ainda não carregados. Aguarde o fetchRawData terminar.");
+                return;
+            }
+
+            const startDate = new Date(start + 'T00:00:00Z');
+            const endDate = new Date(end + 'T23:59:59Z');
+            const targetListId = '65f04826054264a62f305e1d'; // ID da lista desejada
+
+            const filtered = allTrelloCards.filter(card => {
+                try {
+                    const creationDate = new Date(convertHexcodeIntoUTC(card.id));
+
+                    // Filtro por data + filtro por lista
+                    return (
+                        creationDate >= startDate &&
+                        creationDate <= endDate &&
+                        card.idList === targetListId
+                    );
+                } catch (e) {
+                    console.warn("Erro ao converter ID:", card.id);
+                    return false;
+                }
+            });
+
+            // console.log(`🕵️ Total de cards da lista "${targetListId}" criados entre ${start} e ${end}: ${filtered.length}`);
+            return filtered;
+        };
+
+        filterByDate('2025-04-01', '2025-04-31');
     }
 
     function applyAndRenderFilter(board, cards, membersMap, listNamesMap) {
-        console.log(`Aplicando filtro e renderizando...`);
+        // console.log(`Aplicando filtro e renderizando...`);
 
         const startDate = startDateInput.value ? new Date(startDateInput.value + 'T00:00:00Z') : null;
         const endDate = endDateInput.value ? new Date(endDateInput.value + 'T23:59:59Z') : null;
@@ -76,11 +109,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (startDate || endDate) {
             filteredCards = cards.filter(card => {
-                const cardLastActivityDate = new Date(card.dateLastActivity);
+                const cardCreationDate = new Date(convertHexcodeIntoUTC(card.id));
 
-                const isAfterStartDate = !startDate || cardLastActivityDate >= startDate;
-                const isBeforeEndDate = !endDate || cardLastActivityDate <= endDate;
-                
+                const isAfterStartDate = !startDate || cardCreationDate >= startDate;
+                const isBeforeEndDate = !endDate || cardCreationDate <= endDate;
+
                 return isAfterStartDate && isBeforeEndDate;
             });
         }
@@ -89,6 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderMemberAnalysis(filteredCards, membersMap, listNamesMap);
         renderListDistributionChart(filteredCards, listNamesMap);
     }
+
 
     // ... (renderBoardSummary e renderMemberAnalysis permanecem inalteradas, mantendo sua versão mais recente) ...
     // Estou omitindo elas aqui para manter o foco nas mudanças do gráfico.
@@ -126,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const sortedMemberNames = Array.from(uniqueMemberIds)
                 .map(memberId => membersMap.get(memberId) || 'Membro Desconhecido')
                 .sort((a, b) => a.localeCompare(b));
-            
+
             sortedMemberNames.forEach(memberName => {
                 const listItem = document.createElement('li');
                 listItem.textContent = memberName;
@@ -144,9 +178,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderMemberAnalysis(cards, membersMap, listNamesMap) {
         memberAnalysisPanel.innerHTML = '';
-        
+
         const title = document.createElement('h2');
-        title.textContent = 'Análise de Cartões por Membro e Status (Filtrados)';
+        title.textContent = 'Análise de Cartões por Membro e Status (Filtrados)\n';
         memberAnalysisPanel.appendChild(title);
 
         const memberCardStats = {};
@@ -292,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     tooltip: {
                         callbacks: {
-                            label: function(context) {
+                            label: function (context) {
                                 let label = context.label || '';
                                 if (label) {
                                     label = label.replace(/\s\(\d+\)$/, '');
@@ -330,4 +364,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const rawDataRefreshInterval = 60 * 1000;
     setInterval(fetchRawData, rawDataRefreshInterval);
+
+
 });
+
+
+const convertHexcodeIntoUTC = (hex) => {
+    if (!hex || hex.length < 8) {
+        throw new Error("Hex inválido ou muito curto.");
+    }
+
+    const hexTimestamp = hex.substring(0, 8);
+    const timestampInSeconds = parseInt(hexTimestamp, 16);
+    const dateUTC = new Date(timestampInSeconds * 1000);
+
+    return dateUTC.toISOString();
+}
