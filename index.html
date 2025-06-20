@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trello Board Análise Detalhada</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="container">
         <h1>Análise Detalhada do Quadro Trello</h1>
@@ -25,14 +27,15 @@
             <div id="board-info">
                 <p>Carregando informações do Trello...</p>
             </div>
-            
+
             <div class="chart-container">
-                <h2>Distribuição de Cartões por Lista (Filtrados)</h2>
+                <h2 id="listChartTitle">Distribuição de Cartões por Lista (Filtrados)</h2>
                 <canvas id="listDistributionChart"></canvas>
             </div>
         </div>
         <div id="member-analysis-panel"></div>
     </div>
-    <script src="script.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
+
 </html>
