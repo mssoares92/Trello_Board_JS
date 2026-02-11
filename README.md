@@ -20,7 +20,7 @@ O projeto foi estruturado seguindo padrões modernos de engenharia de frontend, 
 * **`UIRenderer`**: Camada de visualização que abstrai a manipulação do DOM e a renderização de gráficos complexos.
 * **`Main.js`**: Orquestrador central que gerencia o estado global (Cards, Lists, Members) e os gatilhos de atualização.
 
-[Image of a software architecture diagram showing data flowing from Trello API through a DataProcessor to UIRenderer and Chart.js]
+
 
 ---
 
@@ -28,4 +28,21 @@ O projeto foi estruturado seguindo padrões modernos de engenharia de frontend, 
 
 ### 1. Sistema de Filtragem Reativa
 A aplicação implementa um motor de busca que permite isolar janelas de tempo específicas e cruzar esses dados com membros da equipe:
-* **Cross
+* **Cross-Filtering**: Ao selecionar um membro no painel lateral, todos os gráficos e métricas do board são recalculados instantaneamente para refletir apenas a performance individual daquele colaborador.
+* **Normalização Temporal**: Tratamento de strings de data para garantir que o filtro cubra exatamente de `00:00:00` a `23:59:59` do intervalo selecionado.
+
+### 2. Layout Responsivo & Grid System
+A interface foi projetada para alta densidade de informação:
+* **CSS Grid**: Utilizado para o painel de análise de membros, adaptando-se de 4 colunas (Desktop) para 1 coluna (Mobile) via Media Queries.
+* **Flexbox**: Aplicado em cards de resumo para garantir alinhamento vertical consistente e resiliência a conteúdos dinâmicos.
+
+### 3. Otimização de Performance
+* **Parallel Fetching**: Uso de `Promise.all` para reduzir o tempo de latência no carregamento inicial de dados.
+* **Memory Management**: Destruição programática de instâncias do Chart.js para evitar *memory leaks* durante as atualizações automáticas (polling).
+
+---
+
+## ⚙️ Regras de Negócio & Configuração
+
+O dashboard é configurado para monitorar fluxos de trabalho específicos (ex: Processos de Licitação):
+
