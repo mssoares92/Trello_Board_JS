@@ -1,51 +1,31 @@
-⚙️ Configuração e Regras de Negócio
-O sistema foi desenhado para ser altamente customizável através do módulo config.js. Ele permite a definição de fluxos específicos, como o monitoramento de processos de licitação:
+# 📊 Trello Advanced Analytics Dashboard
 
-Identificadores de Lista (Mapping): O projeto mapeia IDs específicos da API do Trello para categorias de análise internas (ex: concluidos e licitacaoAnalises). Isso permite que o DataProcessor realize cálculos de performance focados em entregas reais, ignorando listas auxiliares.
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![Chart.js](https://img.shields.io/badge/Chart.js-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-Grid%20%26%20Flexbox-1572B6?style=for-the-badge&logo=css3)
+![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?style=for-the-badge&logo=vercel)
 
-Ciclo de Atualização: Configurado para um polling de 60 segundos, garantindo que o dashboard reflita mudanças quase em tempo real sem sobrecarregar o limite de requisições (rate limit) da API do Trello.
+Uma solução robusta de **Business Intelligence (BI)** desenvolvida para transformar dados brutos da API do Trello em insights estratégicos. O foco da aplicação é o monitoramento de fluxos de trabalho, análise de produtividade por membro e gestão de prazos através de filtragem temporal dinâmica.
 
-🔒 Segurança e Boas Práticas
-[!IMPORTANT] Nota sobre Credenciais: O arquivo config.js contém a apiKey e o token de acesso. Para ambientes de produção, recomenda-se:
+**🔗 [Acesse o Projeto Live](https://trello-board-js.vercel.app/)**
 
-Adicionar o config.js ao seu .gitignore.
+---
 
-Utilizar variáveis de ambiente (process.env) caso utilize um bundler como Vite ou Webpack.
+## 🏗️ Arquitetura do Software
 
-Rotacionar tokens periodicamente através do painel de desenvolvedor do Trello.
+O projeto foi estruturado seguindo padrões modernos de engenharia de frontend, utilizando uma abordagem modular para garantir escalabilidade e fácil manutenção:
 
-📊 Lógica de Processamento de Dados
-Abaixo, um detalhamento da inteligência aplicada no DataProcessor:
+* **`TrelloService`**: Gerencia toda a comunicação assíncrona com a REST API do Trello.
+* **`DataProcessor`**: O núcleo lógico. Responsável pela normalização de datas, cálculos estatísticos e filtragem multidimensional.
+* **`UIRenderer`**: Camada de visualização que abstrai a manipulação do DOM e a renderização de gráficos complexos.
+* **`Main.js`**: Orquestrador central que gerencia o estado global (Cards, Lists, Members) e os gatilhos de atualização.
 
-Filtragem Multidimensional
-A função filterCards não apenas filtra por data, mas gerencia o estado de filtragem cruzada por membros. Se um memberId é fornecido, o motor de busca isola a performance individual, permitindo comparar a produtividade de um colaborador específico versus a média do quadro.
+[Image of a software architecture diagram showing data flowing from Trello API through a DataProcessor to UIRenderer and Chart.js]
 
-Normalização Temporal
-As datas de entrada são tratadas para cobrir o intervalo total do dia selecionado:
+---
 
-Início: YYYY-MM-DDT00:00:00Z
+## 🛠️ Destaques Técnicos
 
-Fim: YYYY-MM-DDT23:59:59Z Isso elimina discrepâncias comuns em fusos horários diferentes (UTC vs Local).
-
-🚀 Como instalar este projeto
-Clone o repositório:
-
-Bash
-
-git clone https://github.com/seu-usuario/trello-analytics.git
-Configure suas chaves: Edite o arquivo js/config.js com suas credenciais obtidas em trello.com/app-key.
-
-Execução: Como o projeto utiliza ES6 Modules, ele não funcionará abrindo o arquivo .html diretamente no navegador. Utilize uma extensão como o Live Server (VS Code) ou o comando abaixo:
-
-Bash
-
-# Se tiver Python instalado
-python -m http.server 8000
-🛠️ Tecnologias e Ferramentas
-Runtime: Navegador (Client-side apenas)
-
-Gráficos: Chart.js 4.x
-
-Estilização: CSS Moderno (Grid & Flexbox)
-
-Integração: Trello REST API
+### 1. Sistema de Filtragem Reativa
+A aplicação implementa um motor de busca que permite isolar janelas de tempo específicas e cruzar esses dados com membros da equipe:
+* **Cross
