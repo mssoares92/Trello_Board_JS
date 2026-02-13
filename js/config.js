@@ -5,7 +5,7 @@ export const config = {
     boardId: 'XaNWLODV',
     listIds: {
         concluidos: '65f04826054264a62f305e1d', // ID da lista '✅ CONCLUÍDOS ✅'
-        licitacaoAnalises: '67b88b37c15f5254c01bcb44' // ID da lista '📊 LICITAÇÃO E ANALISES CONCLUÍDAS 📊'
+        licitacaoAnalises: '69022069376096f6a5fe7bcb' // ID da lista 'Software Atrasados'
     },
     refreshInterval: 60 * 1000 // 60 segundos
 };

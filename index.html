@@ -11,30 +11,42 @@
 </head>
 
 <body>
-    <div class="container">
-        <h1>Análise Detalhada do Quadro Trello</h1>
-
-        <div class="filter-controls">
-            <label for="startDate">Data Inicial:</label>
-            <input type="date" id="startDate">
-            <label for="endDate">Data Final:</label>
-            <input type="date" id="endDate">
-            <button id="filterButton">Aplicar Filtro</button>
-            <button id="clearFilterButton">Limpar Filtro</button>
-        </div>
-
-        <div class="top-summary-section">
-            <div id="board-info">
-                <p>Carregando informações do Trello...</p>
+    <div class="dashboard">
+        <header class="dashboard-header">
+            <h1>Trello Board Analyzer</h1>
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label>Data Inicial</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="filter-group">
+                    <label>Data Final</label>
+                    <input type="date" id="endDate">
+                </div>
+                <button id="filterButton">Aplicar</button>
+                <button id="clearFilterButton">Limpar</button>
             </div>
+        </header>
 
-            <div class="chart-container">
-                <h2 id="listChartTitle">Distribuição de Cartões por Lista (Filtrados)</h2>
+        <main class="dashboard-grid">
+            <section class="panel board-panel">
+                <div id="board-info">
+                    <p>Carregando informações do Trello...</p>
+                </div>
+            </section>
+
+            <section class="panel chart-panel">
+                <h2 id="listChartTitle">Distribuição de Cartões</h2>
                 <canvas id="listDistributionChart"></canvas>
-            </div>
-        </div>
-        <div id="member-analysis-panel"></div>
+            </section>
+
+            <section class="panel members-panel">
+                <h2>Análise por Membro</h2>
+                <div id="member-analysis-panel"></div>
+            </section>
+        </main>
     </div>
+
     <script type="module" src="js/main.js"></script>
 </body>
 

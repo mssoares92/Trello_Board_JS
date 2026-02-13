@@ -16,7 +16,7 @@ export const UIRenderer = {
         summaryCard.innerHTML = `
             <h2>Quadro: ${board.name}</h2>
             <p><strong>Total de Cartões Filtrados:</strong> ${cards.length}</p>
-            <p><strong>Total de Cartões Concluídos (e Licitação):</strong> <strong>${totalBoardSpecificCards}</strong></p>
+            <p><strong>Total de Cartões Concluídos (e Softrware Atualizados):</strong> <strong>${totalBoardSpecificCards}</strong></p>
             <p><strong>Membros Atribuídos a Cartões Filtrados:</strong></p>
         `;
 
@@ -34,7 +34,7 @@ export const UIRenderer = {
             sortedMemberIdsArray.forEach(memberId => {
                 const memberName = membersMap.get(memberId) || 'Membro Desconhecido';
                 const totalCardsForMember = memberCardStats[memberId]?.total || 0;
-                
+
                 const listItem = document.createElement('li');
                 listItem.textContent = `${memberName} (${totalCardsForMember} cartões)`;
                 membersList.appendChild(listItem);
@@ -60,10 +60,26 @@ export const UIRenderer = {
         });
 
         if (sortedMemberIds.length === 0) {
-            targetElement.innerHTML += '<p style="text-align: center;">Nenhum cartão atribuído a membros neste quadro, ou nenhum cartão no período selecionado.</p>';
+            targetElement.innerHTML += '<p style="text-align: center;">Nenhum cartão atribuído a membros neste quadro.</p>';
             return;
         }
 
+        // 🔥 Descobrir o maior total de concluídos
+        // 🔥 Descobrir o maior total de concluídos
+        let maxTotal = 0;
+        const totalsByMember = {};
+
+        sortedMemberIds.forEach(memberId => {
+            const stats = memberCardStats[memberId];
+            const specificCounts = DataProcessor.calculateSpecificCardCounts(stats, listNamesMap, specificListIds);
+            totalsByMember[memberId] = specificCounts.total;
+
+            if (specificCounts.total > maxTotal) {
+                maxTotal = specificCounts.total;
+            }
+        });
+
+        // 🚀 Agora renderiza os cards
         sortedMemberIds.forEach(memberId => {
             const memberName = membersMap.get(memberId) || 'Membro Desconhecido';
             const stats = memberCardStats[memberId];
@@ -71,12 +87,17 @@ export const UIRenderer = {
             const memberCardSummary = document.createElement('div');
             memberCardSummary.classList.add('member-card-summary');
 
+            // 👑 Aplica destaque ao top performer
+            if (totalsByMember[memberId] === maxTotal && maxTotal > 0) {
+                memberCardSummary.classList.add('top-performer');
+            }
+
             const memberTitle = document.createElement('h3');
             memberTitle.textContent = memberName;
             memberTitle.style.cursor = 'pointer';
             memberTitle.classList.add('member-name-clickable');
             memberTitle.dataset.memberId = memberId;
-            
+
             memberTitle.addEventListener('click', () => {
                 onMemberClickCallback(memberId);
             });
@@ -87,7 +108,7 @@ export const UIRenderer = {
 
             const totalMemberCardsParagraph = document.createElement('p');
             totalMemberCardsParagraph.classList.add('total-member-cards');
-            totalMemberCardsParagraph.innerHTML = `Total de Cartões Concluídos (e Licitação): <strong>${specificCounts.total}</strong>`;
+            totalMemberCardsParagraph.innerHTML = `<strong>Total</strong>: Cartões Concluídos e Software Atrasados: <strong>${specificCounts.total}</strong>`;
             memberCardSummary.appendChild(totalMemberCardsParagraph);
 
             const specificListsBreakdown = document.createElement('div');
@@ -111,6 +132,7 @@ export const UIRenderer = {
             memberCardSummary.appendChild(listStatusBreakdown);
             targetElement.appendChild(memberCardSummary);
         });
+
     },
 
     renderListDistributionChart: (chartData, chartCanvas, chartInstanceRef, chartTitleElement, memberName = null) => {
@@ -120,55 +142,97 @@ export const UIRenderer = {
         }
 
         const { labels, data } = chartData;
-        const newPredefinedColors = [
-            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-            '#FF9F40', '#8D6E63', '#9CCC65', '#26A69A', '#AB47BC',
-            '#FFD54F', '#64B5F6', '#EF5350', '#7E57C2', '#29B6F6',
-            '#FDD835', '#D4E157', '#FFEE58', '#BA68C8', '#4DB6AC'
-        ];
-        const backgroundColors = data.map((_, i) => newPredefinedColors[i % newPredefinedColors.length]);
+
+        // 🔥 Criar crescimento acumulado (efeito exponencial visual)
+        const cumulativeData = data.reduce((acc, val, i) => {
+            acc.push((acc[i - 1] || 0) + val);
+            return acc;
+        }, []);
 
         if (data.length === 0) {
             chartCanvas.style.display = 'none';
-            chartTitleElement.textContent = `Nenhum cartão ${memberName ? `para ${memberName} ` : ''}no período selecionado para o gráfico.`;
+            chartTitleElement.textContent =
+                `Nenhum cartão ${memberName ? `para ${memberName} ` : ''}no período selecionado para o gráfico.`;
             return;
         } else {
             chartCanvas.style.display = 'block';
-            chartTitleElement.textContent = `Distribuição de Cartões por Lista (Filtrados${memberName ? ` - ${memberName}` : ''})`;
+            chartTitleElement.textContent =
+                `Evolução Acumulada de Cartões por Lista (Filtrados${memberName ? ` - ${memberName}` : ''})`;
         }
 
         const ctx = chartCanvas.getContext('2d');
+
+        // 🎨 Gradiente profissional (Dracula/Omni vibe)
+        const gradient = ctx.createLinearGradient(0, 0, 0, chartCanvas.height);
+        gradient.addColorStop(0, 'rgba(80, 250, 123, 0.35)');
+        gradient.addColorStop(1, 'rgba(80, 250, 123, 0.02)');
+
         chartInstanceRef.current = new Chart(ctx, {
-            type: 'pie',
+            type: 'line',
             data: {
                 labels: labels,
                 datasets: [{
-                    data: data,
-                    backgroundColor: backgroundColors,
-                    hoverOffset: 4,
-                    borderWidth: 0
+                    label: 'Crescimento Acumulado de Cartões',
+                    data: cumulativeData,
+                    tension: 0.45,
+                    fill: true,
+                    backgroundColor: gradient,
+                    borderColor: '#50fa7b',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#50fa7b'
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
                 plugins: {
-                    legend: { position: 'top' },
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 8
+                        }
+                    },
                     tooltip: {
                         callbacks: {
                             label: function (context) {
-                                let label = context.label?.replace(/\s\(\d+\)$/, '') || '';
-                                if (context.parsed !== null) {
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((context.parsed / total) * 100).toFixed(2);
-                                    label += `: ${context.parsed} cartões (${percentage}%)`;
-                                }
-                                return label;
+                                const value = context.parsed.y;
+                                return ` ${value} cartões acumulados`;
+                            },
+                            afterLabel: function (context) {
+                                const originalValue = data[context.dataIndex];
+                                return ` +${originalValue} cartões neste status`;
                             }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            maxRotation: 0,
+                            autoSkip: true
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            borderDash: [4, 4],
+                            color: 'rgba(148,163,184,0.2)'
+                        },
+                        ticks: {
+                            precision: 0
                         }
                     }
                 }
             }
         });
     }
+
 };
